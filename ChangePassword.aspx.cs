@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Cryptography;
@@ -14,22 +15,25 @@ namespace SITConnect
     {
         string MYDBConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString;
         public int attempt;
+        string password;
         string password1;
         string password2;
+        DateTime passwordCreated;
         static string finalHash;
         static string salt;
         byte[] Key;
         byte[] IV;
         protected void Page_Load(object sender, EventArgs e)
         {
-           
+
+       
         }
 
-        private bool retrievePassword(string pwd)
+        private bool changePassword(string pwd)
         {
             var email = Session["LoggedIn"].ToString();
             SqlConnection connection = new SqlConnection(MYDBConnectionString);
-            string sql = "select Password1, Password2 FROM Account WHERE Email=@Email";
+            string sql = "select Password, Password1, Password2, PasswordCreated FROM Account WHERE Email=@Email";
             SqlCommand command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@Email", email);
             try
@@ -39,6 +43,10 @@ namespace SITConnect
                 {
                     while (reader.Read())
                     {
+                        if (reader["Password"] != DBNull.Value)
+                        {
+                            password = reader["Password"].ToString();
+                        }
                         if (reader["Password1"] != DBNull.Value)
                         {
                             password1 = reader["Password1"].ToString();
@@ -46,6 +54,10 @@ namespace SITConnect
                         if (reader["Password2"] != DBNull.Value)
                         {
                             password2 = reader["Password2"].ToString();
+                        }
+                        if (reader["PasswordCreated"] != DBNull.Value)
+                        {
+                            passwordCreated = (DateTime)reader["PasswordCreated"];
                         }
                     }
                 }
@@ -60,13 +72,45 @@ namespace SITConnect
                 connection.Close();
                 
             }
-            if (pwd == password1 || pwd == password2)
+            if (pwd == password || pwd == password1 || pwd == password2)
             {
                 lbl_error.Text = "Password used before";
                 return false;
             }
             else
             {
+                TimeSpan MinTime = TimeSpan.FromTicks(DateTime.Now.Ticks) - TimeSpan.FromTicks(passwordCreated.Ticks);
+                if (MinTime.Minutes > 1)
+                {
+                        try
+                        {
+                            using (SqlConnection con = new SqlConnection(MYDBConnectionString))
+                            {
+                                using (SqlCommand cmd = new SqlCommand("Update Account SET PasswordCreated=@PasswordCreated, Password=@Password, Password1=@Password1, Password2=@Password2 Where Email=@Email"))
+                                {
+                                    using (SqlDataAdapter sda = new SqlDataAdapter())
+                                    {
+                                        cmd.CommandType = CommandType.Text;
+                                        cmd.Parameters.AddWithValue("@Email", email);
+                                        cmd.Parameters.AddWithValue("@PasswordCreated", DateTime.Now);
+                                        cmd.Parameters.AddWithValue("@Password", pwd);
+                                        cmd.Parameters.AddWithValue("@Password1", password);
+                                        cmd.Parameters.AddWithValue("@Password2", password1);
+                                        cmd.Connection = con;
+                                        con.Open();
+                                        cmd.ExecuteNonQuery();
+                                        con.Close();
+                                    }
+                                }
+
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(ex.ToString());
+                        }
+                }
+       
                 return true;
             }
         }
@@ -156,8 +200,19 @@ namespace SITConnect
                     string userHashcfmpwd = Convert.ToBase64String(hashWithSaltcfmpwd);
                     if (userHash.Equals(userHashcfmpwd))
                     {
-                        if (retrievePassword(userHash))
-                        return true;
+                        if (changePassword(userHash))
+                        {
+                            Response.Redirect("HomePage.aspx", false);
+                        }
+                        else
+                        {
+                            lbl_error.Text = "Old Password cannot be used";
+                        }
+
+                    }
+                    else
+                    {
+                        lbl_error.Text = "Password does not match";
                     }
                 }
             }
@@ -171,8 +226,8 @@ namespace SITConnect
         protected void btn_submit_Click(object sender, EventArgs e)
         {
             string pwd = tb_pwd.Text.ToString().Trim();
-            retrievePassword(pwd);
-
+            string cfmpwd = tb_cfmpwd.Text.ToString().Trim();
+            ValidatePassword(pwd, cfmpwd);
         }
     }
 }

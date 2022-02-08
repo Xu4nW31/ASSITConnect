@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 
 namespace SITConnect
 {
@@ -54,8 +55,73 @@ namespace SITConnect
             return score;
         }
 
+
+        private int checkFields()
+        {
+            int score = 0;
+
+            if (string.IsNullOrEmpty(tb_firstname.Text.ToString()))
+            {
+                score += 1;
+                tb_firstname.ForeColor = Color.Red;
+                lbl_firstnamechecker.Text = "Please enter your First Name";
+            }
+            if (string.IsNullOrEmpty(tb_lastname.Text.ToString()))
+            {
+                score += 1;
+                lbl_lastnamechecker.ForeColor = Color.Red;
+                lbl_lastnamechecker.Text = "Please enter your Last Name";
+            }
+            if (string.IsNullOrEmpty(tb_creditcard.Text.ToString()))
+            {
+                score += 1;
+                lbl_creditcardchecker.ForeColor = Color.Red;
+                lbl_creditcardchecker.Text = "Please enter your Credit Card Number";
+            }
+            if (string.IsNullOrEmpty(tb_expirydate.Text.ToString()))
+            {
+                score += 1;
+                lbl_cardexpirychecker.ForeColor = Color.Red;
+                lbl_cardexpirychecker.Text = "Please enter your Credit Card's Expiry";
+            }
+            if (string.IsNullOrEmpty(tb_creditcardcvv.Text.ToString()))
+            {
+                score += 1;
+                lbl_cvvchecker.ForeColor = Color.Red;
+                lbl_cvvchecker.Text = "Please enter your Credit Card's CVV";
+            }
+            if (string.IsNullOrEmpty(tb_email.Text.ToString()))
+            {
+                score += 1;
+                lbl_email.ForeColor = Color.Red;
+                lbl_email.Text = "Please enter your Email";
+            }
+            if (Regex.IsMatch(tb_email.Text, @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"))
+            {
+                score += 1;
+                lbl_email.ForeColor = Color.Red;
+                lbl_email.Text = "Please enter a valid email";
+            }
+            if (string.IsNullOrEmpty(tb_DOB.Text.ToString()))
+            {
+                score += 1;
+                lbl_dobchecker.ForeColor = Color.Red;
+                lbl_dobchecker.Text = "Please enter your Date of Birth";
+            }
+            if (!FileUpload1.HasFile)
+            {
+                score += 1;
+                lbl_photo.ForeColor = Color.Red;
+                lbl_photo.Text = "Please insert your photo";
+            }
+
+            return score;
+        }
+
         protected void createAccount()
         {
+            string fileName = Path.GetFileName(FileUpload1.PostedFile.FileName);
+            FileUpload1.SaveAs(Server.MapPath("Photo/" + fileName));
             try
             {
                 using (SqlConnection con = new SqlConnection(MYDBConnectionString))
@@ -78,7 +144,7 @@ namespace SITConnect
                             cmd.Parameters.AddWithValue("@Password", finalHash);
                             cmd.Parameters.AddWithValue("@PasswordSalt", salt);
                             cmd.Parameters.AddWithValue("@DOB", tb_DOB.Text.Trim());
-                            cmd.Parameters.AddWithValue("@Photo", DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Photo", fileName);
                             cmd.Parameters.AddWithValue("@IV", Convert.ToBase64String(IV));
                             cmd.Parameters.AddWithValue("@Key", Convert.ToBase64String(Key));
                             cmd.Parameters.AddWithValue("@Password1", DBNull.Value);
@@ -130,6 +196,8 @@ namespace SITConnect
             HttpUtility.HtmlEncode(tb_creditcardcvv.Text);
             HttpUtility.HtmlEncode(tb_password.Text);
             HttpUtility.HtmlEncode(tb_email.Text);
+
+
 
             string pwd = tb_password.Text.ToString().Trim(); ;
             //Generate random "salt"

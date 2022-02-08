@@ -11,7 +11,7 @@
             var str = document.getElementById('<%=tb_password.ClientID %>').value;
 
             if (str.length < 12) {
-                document.getElementbyId("lbl_pwdchecker").innerHTML = "Password Length Must be at Least 8 Characters";
+                document.getElementbyId("lbl_pwdchecker").innerHTML = "Password Length Must be at Least 12 Characters";
                 document.getElementbyId("lbl_pwdchecker").style.color = "Red";
                 return ("too_short");
        
@@ -41,7 +41,6 @@
                 return ("no_specialchar");
             }
             
-
             document.getElementById("lbl_pwdchecker").innerHTML = "Excellent!"
             document.getElementById("lbl_pwdchecker").style.color = "Green";
         }
@@ -53,7 +52,7 @@
                 document.getElementbyId("lbl_firstnamechecker").innerHTML = "Field cannot be empty";
                 document.getElementbyId("lbl_firstnamechecker").style.color = "Red";
             }
-
+           
             document.getElementById("lbl_firstnamechecker").innerHTML = "Excellent!"
             document.getElementById("lbl_firstnamechecker").style.color = "Green";
         }
@@ -73,17 +72,17 @@
         function validatecreditcard() {
             var str = document.getElementById('<%=tb_creditcard.ClientID %>').value;
 
-            if (str.length == 0) {
-                document.getElementbyId("lbl_creditcardchecker").innerHTML = "Field cannot be empty";
-                document.getElementbyId("lbl_creditcardchecker").style.color = "Red";
+            if (str.length == 16) {
+                if (str.match(/^[0-9]+$/)) {
+                    document.getElementById("lbl_creditcardchecker").innerHTML = "Excellent!"
+                    document.getElementById("lbl_creditcardchecker").style.color = "Green";
+                }
+                else {
+                    document.getElementById("lbl_creditcardchecker").innerHTML = "Please enter only numbers into this field"
+                    document.getElementById("lbl_creditcardchecker").style.color = "Red";
+                }
             }
-            else if (str.length > 16) {
-                document.getElementbyId("lbl_creditcardchecker").innerHTML = "Credit Card Number can only be 16 digits";
-                document.getElementbyId("lbl_creditcardchecker").style.color = "Red";
-            }
-
-            document.getElementById("lbl_creditcardchecker").innerHTML = "Excellent!"
-            document.getElementById("lbl_creditcardchecker").style.color = "Green";
+ 
         }
 
         function validatecardexpiry() {
@@ -101,18 +100,16 @@
         function validatecvv() {
             var str = document.getElementById('<%=tb_creditcardcvv.ClientID %>').value;
 
-            if (str.length == 0) {
-                document.getElementbyId("lbl_cvvchecker").innerHTML = "Field cannot be empty";
-                document.getElementbyId("lbl_cvvchecker").style.color = "Red";
-            }
-
-            if (str.length > 3) {
-                document.getElementbyId("lbl_cvvchecker").innerHTML = "CVV cannot be more than 3 digits";
-                document.getElementbyId("lbl_cvvchecker").style.color = "Red";
-            }
-
-            document.getElementById("lbl_cvvchecker").innerHTML = "Excellent!"
-            document.getElementById("lbl_cvvchecker").style.color = "Green";
+            if (str.length == 3) {
+                if (str.match(/^[0-9]+$/)) {
+                    document.getElementById("lbl_cvvchecker").innerHTML = "Excellent!"
+                    document.getElementById("lbl_cvvchecker").style.color = "Green";
+                }
+                else {
+                    document.getElementById("lbl_cvvchecker").innerHTML = "Please enter only numbers into this field"
+                    document.getElementById("lbl_cvvchecker").style.color = "Red";
+                }
+            } 
         }
 
         function validateemail() {
@@ -123,8 +120,13 @@
                 document.getElementbyId("lbl_emailchecker").style.color = "Red";
             }
 
-            document.getElementById("lbl_cvvchecker").innerHTML = "Excellent!"
-            document.getElementById("lbl_cvvchecker").style.color = "Green";
+            if (Regex.IsMatch(/^\S+@\S+\.\S+$/)) {
+                document.getElementById("lbl_emailchecker").innerHTML = "Invalid Email Address"
+                document.getElementById("lbl_emailchecker").style.color = "Red";
+            }
+
+            document.getElementById("lbl_emailchecker").innerHTML = "Excellent!"
+            document.getElementById("lbl_emailchecker").style.color = "Green";
         }
 
         function validatedob() {
