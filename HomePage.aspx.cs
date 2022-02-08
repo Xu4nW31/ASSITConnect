@@ -19,6 +19,7 @@ namespace SITConnect
                 }
                 else
                 {
+                    lbl_email.Text = "Email: " + Session["LoggedIn"];
                     lbl_message.Text = "Congratulations!, you are logged in!";
                     lbl_message.ForeColor = System.Drawing.Color.Green;
                 }

@@ -13,6 +13,7 @@
             <br />
             <asp:Label ID="lbl_message" runat="server" Text=" "></asp:Label>
             <br />
+            <asp:Label ID="lbl_email" runat="server" Text=" "></asp:Label>
             <br />
             <asp:Button ID="btn_logout" runat="server" OnClick="btn_logout_Click" Text="Log Out" />
             </strong>
