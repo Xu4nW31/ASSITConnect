@@ -225,6 +225,9 @@ namespace SITConnect
 
         protected void btn_submit_Click(object sender, EventArgs e)
         {
+            HttpUtility.HtmlEncode(tb_pwd.Text);
+            HttpUtility.HtmlEncode(tb_cfmpwd.Text);
+
             string pwd = tb_pwd.Text.ToString().Trim();
             string cfmpwd = tb_cfmpwd.Text.ToString().Trim();
             ValidatePassword(pwd, cfmpwd);
